@@ -1,0 +1,84 @@
+* Adding Arrays to Lox
+
+ Array syntax can be thought of as a syntactic sugar that returns a
+ array class object from the runtime.
+
+ e.g
+ #+begin_src
+ var a = [1, 2, 3];
+ #+end_src
+
+ is the equivalant of
+ var a = Array(1, 2, 3);
+
+ This allows for definign the array as inherited from LoxClass with methods on it e.g
+
+ #+begin_src
+ Array.push(x)
+ Array.pop(x)
+ Array.get(n)
+ Array.set(n, v)
+ #+end_src
+
+ Traditional access is really syntactic for the above calls
+
+ #+begin_src
+ array[0] -> array.get(0)
+ array[0] = 10 -> array.get(0).set(10)
+
+ or.. array[0] = 10 -> array.set(0, 10)
+ #+end_src
+
+However this example doesn't work because get returns a value, where as we want to assign...
+
+Solution Options
+- Create a new type of assign node, but feels dirty
+- Treat arrays seperatly as a built in literal..
+- Get returns a reference to a value in the array that can be updated
+
+** The JS Style Solution
+JS treats [] as a way of accessing members as computed e.g
+object["hello"] is the same as object.hello
+
+An array is then really just a object with a succession of numerical members.. e.g
+object.0 object.1 object.2
+
+Implementation for this is somewhat simple, in the parser we detect a
+"[" like a dot and the evaluate the expression returning the accessor. 
+
+The object must track it's current length, so that it can add the next member, and also shift members when things are deleted.
+
+** Identifier's are no longer primary
+Add an identifier node to the AST which has an associated index
+If index is null then treat as a normal var
+If index has some value, then must fetch before hand
+
+** *THE SOLUTION*
+- [X] First Step: Implement the ability for calls to take place using []
+- [X] Second Step: This should allow set operations to take place as well
+- [X] Third Step: Implement Array object
+- [X] Fourth Step: Array object should handle it's own instance get and set calls differently
+- [X] Fifth Step: Detect arrays in the grammar, and is syntactic sugar for call to array instantiation.
+
+** Proposed Grammer
+#+begin_src
+  call           → primary ( "(" arguments? ")" | "." IDENTIFIER | "[" arguments? "]" )* ;
+#+end_src
+
+#+begin_src
+  primary        → "true" | "false" | "nil" | "this"
+               | NUMBER | STRING | IDENTIFIER | "(" expression ")"
+               | "super" "." IDENTIFIER | array;
+
+  array          → "[" arguments? "]"
+#+end_src
+
+
+* Final Notes
+Ended up implementing as a sort of literal which allowed some custom access and set AST nodes.
+Couldn't figure out how to attach methods to that literal though, but I suppose I could inherit from class somehow.
+Something to noodle on.
+
+Not sure if I'll continue work on this implementation or not, my heads a bit of a mess with it, but I did make a note that I should work on some challenges.
+
+That would give a better understanding of the process of doing this on your own. Probably worth a punt at some of them.
